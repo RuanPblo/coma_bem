@@ -1,4 +1,4 @@
-class Usuario{
+abstract class Usuario {
   int _idUsuario;
   String _nomeUsuario;
   String _email;
@@ -11,15 +11,22 @@ class Usuario{
   String get email => _email;
   String get senha => _senha;
 
-  set nomeUsuario(String nome){
+  set nomeUsuario(String nome) {
     _nomeUsuario = nome;
   }
 
-  set email(String email){
+  set email(String email) {
     _email = email;
   }
 
-  set senha(String senha){
-    _senha = senha;
+  set senha(String senha) {
+    if (senha.length >= 6) {
+      _senha = senha;
+    } else {
+      print("Erro: a senha deve ter pelo menos 6 caracteres.");
+    }
   }
+
+  void exibirMenu();
+  void gerenciarConta();
 }

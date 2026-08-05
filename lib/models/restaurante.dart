@@ -17,4 +17,20 @@ class Restaurante {
   set latitude(String lat) => _latitude = lat;
   set longitude(String lon) => _longitude = lon;
   set tipoCulinaria(String tipo) => _tipoCulinaria = tipo;
+
+  void exibirCategoriaCulinaria(){
+    switch(_tipoCulinaria.toLowerCase()){
+      case 'japoensa':
+      print('Categoria: Culinária Asiática - Foco em peixes e arroz');
+      break;
+      case 'italiana':
+      print('Categoria: Massas e Pizzas artesanais.');
+      break;
+      case 'brasileira':
+      print('Categoria: Churrasco, feijoada e pratos típicos.');
+      break;
+      default:
+      print('Categoria: Culinária Internacional ou Diversa.');
+    }
+  }
 }
