@@ -37,6 +37,7 @@ dependencies:
   image_picker: ^1.0.4
   geolocator: ^10.1.0
   cupertino_icons: ^1.0.8
+  sqflite_common_ffi: ^2.4.3
 
 dev_dependencies:
   flutter_test:
