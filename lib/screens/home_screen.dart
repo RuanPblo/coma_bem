@@ -1,83 +1,191 @@
 import 'package:flutter/material.dart';
+ 
+// Ajuste estes caminhos se seus arquivos estiverem em pastas diferentes.
 import '../database/database_helper.dart';
-import 'cadastro_screen.dart';
-
-
+import '../models/restaurante.dart';
+ 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
-
-
+ 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
-
-
+ 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Map<String, dynamic>> _restaurantes = [];
-
-
+  final TextEditingController _buscaController = TextEditingController();
+ 
+  List<Restaurante> _todosOsRestaurantes = [];
+  List<Restaurante> _restaurantesFiltrados = [];
+  bool _carregando = true;
+ 
   @override
   void initState() {
     super.initState();
     _carregarRestaurantes();
   }
-
-
-  void _carregarRestaurantes() async {
-    var dados = await DatabaseHelper.instancia.consultarDados('restaurante');
+ 
+  Future<void> _carregarRestaurantes() async {
+    setState(() => _carregando = true);
+ 
+    final linhas = await DatabaseHelper.instancia.listarTodosRestaurantes();
+    final restaurantes = linhas.map((linha) => Restaurante.fromMap(linha)).toList();
+ 
     setState(() {
-      _restaurantes = dados;
+      _todosOsRestaurantes = restaurantes;
+      _restaurantesFiltrados = restaurantes;
+      _carregando = false;
     });
   }
-
-
+ 
+  void _filtrarRestaurantes(String termo) {
+    final termoBusca = termo.trim().toLowerCase();
+ 
+    setState(() {
+      if (termoBusca.isEmpty) {
+        _restaurantesFiltrados = _todosOsRestaurantes;
+      } else {
+        _restaurantesFiltrados = _todosOsRestaurantes.where((restaurante) {
+          return restaurante.nomeRestaurante.toLowerCase().contains(termoBusca) ||
+              restaurante.tipoCulinaria.toLowerCase().contains(termoBusca);
+        }).toList();
+      }
+    });
+  }
+ 
+  IconData _iconePorTipoCulinaria(String tipo) {
+    switch (tipo.toLowerCase()) {
+      case 'japonesa':
+        return Icons.set_meal;
+      case 'italiana':
+        return Icons.local_pizza;
+      case 'brasileira':
+        return Icons.rice_bowl;
+      case 'vegetariana':
+        return Icons.eco;
+      default:
+        return Icons.restaurant;
+    }
+  }
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF7F5F0),
+ 
       appBar: AppBar(
-        title: Text('Catálogo de Restaurantes'),
-        backgroundColor: Colors.orange,
+        backgroundColor: const Color(0xFF10251B),
+        title: const Text(
+          'Catálogo de Restaurantes',
+          style: TextStyle(
+            color: Color(0xFFD4AF37),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        iconTheme: const IconThemeData(color: Color(0xFFD4AF37)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Sair',
+            onPressed: () {
+              Navigator.pushReplacementNamed(context, '/login');
+            },
+          ),
+        ],
       ),
-
-
-      body: ListView.builder(
-        itemCount: _restaurantes.length,
-
-
-        itemBuilder: (context, index) {
-          return Card(
-            margin: EdgeInsets.all(10),
-            color: Colors.orange[50],
-
-
-            child: ListTile(
-              leading: Icon(Icons.fastfood, color: Colors.orange),
-              title: Text(_restaurantes[index]['res_nm_restaurante']),
-
-
-              subtitle: Text(
-                'Culinária: ${_restaurantes[index]['res_ds_tipo_culinaria']}'
+ 
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: _buscaController,
+              onChanged: _filtrarRestaurantes,
+              decoration: InputDecoration(
+                hintText: 'Buscar restaurante ou culinária...',
+                prefixIcon: const Icon(Icons.search, color: Color(0xFF10251B)),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: const Color(0xFFD4AF37).withOpacity(0.4)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: const Color(0xFFD4AF37).withOpacity(0.4)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFD4AF37), width: 1.5),
+                ),
               ),
             ),
-          );
-        },
-      ),
-
-
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => CadastroScreen()
-            ),
-          );
-        },
-        backgroundColor: Colors.orange,
-        child: Icon(Icons.add),
+          ),
+ 
+          Expanded(
+            child: _carregando
+                ? const Center(child: CircularProgressIndicator(color: Color(0xFF10251B)))
+                : _restaurantesFiltrados.isEmpty
+                    ? const Center(child: Text('Nenhum restaurante encontrado.'))
+                    : RefreshIndicator(
+                        color: const Color(0xFF10251B),
+                        onRefresh: _carregarRestaurantes,
+                        child: ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: _restaurantesFiltrados.length,
+                          itemBuilder: (context, index) {
+                            final restaurante = _restaurantesFiltrados[index];
+ 
+                            return Card(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              elevation: 2,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                side: BorderSide(color: const Color(0xFFD4AF37).withOpacity(0.25)),
+                              ),
+                              child: ListTile(
+                                contentPadding: const EdgeInsets.all(12),
+                                leading: CircleAvatar(
+                                  backgroundColor: const Color(0xFF10251B),
+                                  child: Icon(
+                                    _iconePorTipoCulinaria(restaurante.tipoCulinaria),
+                                    color: const Color(0xFFD4AF37),
+                                  ),
+                                ),
+                                title: Text(
+                                  restaurante.nomeRestaurante,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF10251B),
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  restaurante.tipoCulinaria[0].toUpperCase() +
+                                      restaurante.tipoCulinaria.substring(1),
+                                ),
+                                trailing: const Icon(Icons.chevron_right, color: Color(0xFF10251B)),
+                                onTap: () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Cardápio de ${restaurante.nomeRestaurante} em breve.',
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+          ),
+        ],
       ),
     );
   }
+ 
+  @override
+  void dispose() {
+    _buscaController.dispose();
+    super.dispose();
+  }
 }
-
-

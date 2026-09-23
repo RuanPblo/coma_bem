@@ -1,64 +1,72 @@
-import 'package:flutter/material.dart';
 import 'dart:async';
-import 'login_screen.dart';
-
+import 'package:flutter/material.dart';
+ 
 class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+ 
   @override
-  _SplashScreenState createState() => _SplashScreenState();
+  State<SplashScreen> createState() => _SplashScreenState();
 }
-
+ 
 class _SplashScreenState extends State<SplashScreen> {
-
   @override
   void initState() {
     super.initState();
-
-    Timer(
-      const Duration(seconds: 3),
-      () {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => LoginScreen(),
-          ),
-        );
-      },
-    );
+    _navegarParaLogin();
   }
-
+ 
+  Future<void> _navegarParaLogin() async {
+    await Future.delayed(const Duration(seconds: 2));
+ 
+    // Garante que a tela ainda está na árvore de widgets antes de navegar.
+    if (!mounted) return;
+ 
+    Navigator.pushReplacementNamed(context, '/login');
+  }
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Mesmo tom de fundo usado na tela de login, para manter a
+      // identidade visual do app.
       backgroundColor: const Color(0xFF10251B),
-
+ 
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-
-            // Logo do Coma Bem
             Icon(
-              Icons.restaurant,
-              size: 100,
-              color: const Color(0xFFD9AD4A),
+              Icons.restaurant_menu,
+              size: 90,
+              color: const Color(0xFFD4AF37),
             ),
-
+ 
             const SizedBox(height: 20),
-
-            Text(
+ 
+            const Text(
               'Coma Bem',
               style: TextStyle(
-                fontSize: 30,
+                fontSize: 32,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFFD9AD4A),
+                color: Color(0xFFD4AF37),
               ),
             ),
-
-            const SizedBox(height: 20),
-
-            CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(
-                const Color(0xFFD9AD4A),
+ 
+            const SizedBox(height: 8),
+ 
+            Text(
+              'Encontre os melhores restaurantes perto de você',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: Color(0xFFD4AF37),
               ),
+            ),
+ 
+            const SizedBox(height: 40),
+ 
+            const CircularProgressIndicator(
+              color: Color(0xFFD4AF37),
             ),
           ],
         ),

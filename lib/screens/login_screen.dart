@@ -1,168 +1,118 @@
 import 'package:flutter/material.dart';
-
-// Importa a classe DatabaseHelper construída na Atividade 6.
-// Ela contém a lógica de conexão com o banco de dados SQLite.
+ 
 import '../../database/database_helper.dart';
-
-// Importa a tela principal para onde o usuário irá após o login.
 import 'home_screen.dart';
-
-// Importa o botão customizado.
 import '../components/botao_customizado.dart';
-
+ 
 class LoginScreen extends StatefulWidget {
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
-
+ 
 class _LoginScreenState extends State<LoginScreen> {
-  // Controladores dos campos de E-mail e Senha.
-  final TextEditingController _emailController =
-      TextEditingController();
-
-  final TextEditingController _senhaController =
-      TextEditingController();
-
-  // Função responsável por realizar o login.
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _senhaController = TextEditingController();
+ 
   void _fazerLogin() async {
-    // Pega o texto digitado pelo usuário.
     String email = _emailController.text;
     String senha = _senhaController.text;
-
-    // Consulta o banco de dados para verificar o usuário.
-    var usuario = await DatabaseHelper.instancia
-        .autenticarUsuario(email, senha);
-
-    // Se encontrou o usuário, o login foi realizado.
+ 
+    var usuario =
+        await DatabaseHelper.instancia.autenticarUsuario(email, senha);
+ 
     if (usuario != null) {
-      // Vai para a tela principal.
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (context) => HomeScreen(),
-        ),
+        MaterialPageRoute(builder: (context) => HomeScreen()),
       );
     } else {
-      // Se o usuário não existir ou a senha estiver errada,
-      // mostra uma mensagem na parte inferior da tela.
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'E-mail ou senha inválidos!',
-          ),
-        ),
+        const SnackBar(content: Text('E-mail ou senha inválidos!')),
       );
     }
   }
-
+ 
+  InputDecoration _decoracaoCampo(String label, IconData icone) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(color: Color(0xFF10251B)),
+      prefixIcon: Icon(icone, color: const Color(0xFF10251B)),
+      filled: true,
+      fillColor: Colors.white,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: const Color(0xFFD4AF37).withOpacity(0.4)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: const Color(0xFFD4AF37).withOpacity(0.4)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFFD4AF37), width: 1.5),
+      ),
+    );
+  }
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Fundo bege claro, combinando com o protótipo do Figma.
-      backgroundColor: const Color(0xFFF5EEE2),
-
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-
-        child: Column(
-          // Centraliza o formulário verticalmente.
-          mainAxisAlignment: MainAxisAlignment.center,
-
-          children: [
-            // Logo do aplicativo.
-           
-
-            const SizedBox(height: 20),
-
-            // Título.
-            Text(
-              'Bem-vindo!',
-              style: const TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF10251B),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            // Subtítulo.
-            Text(
-              'Entre para continuar',
-              style: TextStyle(
-                fontSize: 15,
-                color: Colors.grey[700],
-              ),
-            ),
-
-            const SizedBox(height: 30),
-
-            // =========================
-            // CAMPO DE E-MAIL
-            // =========================
-
-            TextField(
-              controller: _emailController,
-
-              decoration: InputDecoration(
-                labelText: 'E-mail',
-
-                prefixIcon: const Icon(
-                  Icons.email_outlined,
-                  color: Color(0xFF10251B),
-                ),
-
-                filled: true,
-                fillColor: Colors.white,
-
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+      backgroundColor: const Color(0xFF10251B),
+ 
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.restaurant_menu, size: 56, color: Color(0xFFD4AF37)),
+ 
+              const SizedBox(height: 16),
+ 
+              const Text(
+                'Bem-vindo!',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFD4AF37),
                 ),
               ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // =========================
-            // CAMPO DE SENHA
-            // =========================
-
-            TextField(
-              controller: _senhaController,
-
-              // Esconde a senha usando pontos.
-              obscureText: true,
-
-              decoration: InputDecoration(
-                labelText: 'Senha',
-
-                prefixIcon: const Icon(
-                  Icons.lock_outline,
-                  color: Color(0xFF10251B),
-                ),
-
-                filled: true,
-                fillColor: Colors.white,
-
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+ 
+              const SizedBox(height: 8),
+ 
+              Text(
+                'Entre para continuar',
+                style: TextStyle(
+                  fontSize: 15,
+                  color: Colors.white.withOpacity(0.85),
                 ),
               ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // =========================
-            // BOTÃO ENTRAR
-            // =========================
-
-            BotaoCustomizado(
-              texto: 'Entrar',
-              onPressed: _fazerLogin,
-            ),
-          ],
+ 
+              const SizedBox(height: 30),
+ 
+              TextField(
+                controller: _emailController,
+                style: const TextStyle(color: Color(0xFF10251B)),
+                decoration: _decoracaoCampo('E-mail', Icons.email_outlined),
+              ),
+ 
+              const SizedBox(height: 20),
+ 
+              TextField(
+                controller: _senhaController,
+                obscureText: true,
+                style: const TextStyle(color: Color(0xFF10251B)),
+                decoration: _decoracaoCampo('Senha', Icons.lock_outline),
+              ),
+ 
+              const SizedBox(height: 24),
+ 
+              BotaoCustomizado(
+                texto: 'Entrar',
+                onPressed: _fazerLogin,
+              ),
+            ],
+          ),
         ),
       ),
     );
