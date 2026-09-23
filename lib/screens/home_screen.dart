@@ -1,45 +1,47 @@
 import 'package:flutter/material.dart';
- 
+
 // Ajuste estes caminhos se seus arquivos estiverem em pastas diferentes.
 import '../database/database_helper.dart';
 import '../models/restaurante.dart';
- 
+import 'detalhe_restaurante_screen.dart';
+import 'cadastro_screen.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
- 
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
- 
+
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _buscaController = TextEditingController();
- 
+
   List<Restaurante> _todosOsRestaurantes = [];
   List<Restaurante> _restaurantesFiltrados = [];
   bool _carregando = true;
- 
+
   @override
   void initState() {
     super.initState();
     _carregarRestaurantes();
   }
- 
+
   Future<void> _carregarRestaurantes() async {
     setState(() => _carregando = true);
- 
+
     final linhas = await DatabaseHelper.instancia.listarTodosRestaurantes();
     final restaurantes = linhas.map((linha) => Restaurante.fromMap(linha)).toList();
- 
+
     setState(() {
       _todosOsRestaurantes = restaurantes;
       _restaurantesFiltrados = restaurantes;
       _carregando = false;
     });
   }
- 
+
   void _filtrarRestaurantes(String termo) {
     final termoBusca = termo.trim().toLowerCase();
- 
+
     setState(() {
       if (termoBusca.isEmpty) {
         _restaurantesFiltrados = _todosOsRestaurantes;
@@ -51,7 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     });
   }
- 
+
   IconData _iconePorTipoCulinaria(String tipo) {
     switch (tipo.toLowerCase()) {
       case 'japonesa':
@@ -66,12 +68,12 @@ class _HomeScreenState extends State<HomeScreen> {
         return Icons.restaurant;
     }
   }
- 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F5F0),
- 
+
       appBar: AppBar(
         backgroundColor: const Color(0xFF10251B),
         title: const Text(
@@ -92,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
- 
+
       body: Column(
         children: [
           Padding(
@@ -120,7 +122,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
- 
+
           Expanded(
             child: _carregando
                 ? const Center(child: CircularProgressIndicator(color: Color(0xFF10251B)))
@@ -134,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           itemCount: _restaurantesFiltrados.length,
                           itemBuilder: (context, index) {
                             final restaurante = _restaurantesFiltrados[index];
- 
+
                             return Card(
                               margin: const EdgeInsets.only(bottom: 12),
                               elevation: 2,
@@ -164,10 +166,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                                 trailing: const Icon(Icons.chevron_right, color: Color(0xFF10251B)),
                                 onTap: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Cardápio de ${restaurante.nomeRestaurante} em breve.',
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          DetalheRestauranteScreen(
+                                        restaurante: restaurante,
                                       ),
                                     ),
                                   );
@@ -180,9 +184,26 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+
+      // Antes só dava pra chegar em /cadastro digitando na barra de
+      // endereço. Agora tem um botão de verdade dentro do app.
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: const Color(0xFFD4AF37),
+        foregroundColor: const Color(0xFF10251B),
+        icon: const Icon(Icons.add),
+        label: const Text('Cadastrar', style: TextStyle(fontWeight: FontWeight.bold)),
+        onPressed: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CadastroScreen()),
+          );
+          // Ao voltar do cadastro, recarrega para mostrar o novo restaurante.
+          _carregarRestaurantes();
+        },
+      ),
     );
   }
- 
+
   @override
   void dispose() {
     _buscaController.dispose();
